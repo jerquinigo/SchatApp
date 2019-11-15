@@ -9,9 +9,7 @@ class MainChat extends Component {
 		this.state = {
 			username: "",
             chatBoxText: "",
-            broadcast: [],
-            broadcastName: [],
-            broadcastText: []
+            broadcast: []
 		};
 
 		socket.on("message", (username, text) => {
@@ -36,14 +34,18 @@ class MainChat extends Component {
     
     componentDidMount(){
         socket.on("chat", (data) => {
-            let nameServ = data.mainName
-            let message = data.message
             this.setState({
-                [...this.state.broadcast],
-
+                broadcast: [...this.state.broadcast, data]
             })
         })
     }
+
+    // this.setState({
+    //     broadcast:{
+    //         ...this.state.broadcast,
+    //   "name": data.mainName, "message": data.message
+    //     }
+
 
     // this.setState(() => ({
     //     person: {
@@ -80,8 +82,9 @@ class MainChat extends Component {
 	sendMessage = e => {
 		e.preventDefault();
 		socket.emit("chat", {
-			message: this.state.chatBoxText,
-			mainName: this.state.username
+            broadcastName: this.state.username,
+			message: this.state.chatBoxText
+			
 		});
 		this.setState({
 			chatBoxText: ""
@@ -89,43 +92,31 @@ class MainChat extends Component {
 	};
 
 
-    // displayUsernameOnScreen = () => {
-    //     if(this.state.broadcastName.length !== 0 && this.state.broadcastText.length !== 0){
-    
-    //     return this.state.broadcastName.map(el => {
-    //         return(
-    //             <div>
-    //     <span>{el}:</span>
-    //             </div>
-    //         )
-    //     })
-    //     }
-    //     else return null
-    // }
+    displayMessageOnScreen = () => {
+        if(this.state.broadcast.length !== 0){
+            return this.state.broadcast.map(el => {
+                return(
+                    <div>
+                     <span>{el.broadcastName}: </span>  
+                     <span>{el.message}</span>   
+                    </div>
+                )
+             
+                
+            })
+        }
+}
 
-    // displayMessagesOnScreen = () => {
-    //     if(this.state.broadcastName.length !== 0 && this.state.broadcastText.length !== 0){
-    
-    //     return this.state.broadcastText.map(el => {
-    //         return(
-    //             <div>
-    //     <span>{el}</span>
-    //             </div>
-    //         )
-    //     })
-    //     }
-    //     else return null
-    // }
 
 	render() {
 
-		console.log(this.state);
+		console.log(this.state.broadcast);
 		return (
 			<div>
 				Main chat component
 				{this.displayInputFields()}
-                {this.displayUsernameOnScreen()}
-                {this.displayMessagesOnScreen()}
+                {this.displayMessageOnScreen()}
+             
                
         
 
