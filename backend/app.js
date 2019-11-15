@@ -21,6 +21,7 @@ io.on("connection", function(socket){
     })
 
     socket.on("typing", function(data){
+        console.log(data)
         socket.broadcast.emit("typing", data)
     })
 

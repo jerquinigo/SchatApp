@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import openSocket from "socket.io-client";
-import { runInThisContext } from "vm";
+//import { runInThisContext } from "vm";
 const socket = openSocket("http://localhost:3100/");
 
 class MainChat extends Component {
@@ -8,21 +8,39 @@ class MainChat extends Component {
 		super();
 		this.state = {
 			username: "",
-            chatBoxText: "",
-            broadcast: []
+			chatBoxText: "",
+			broadcast: [],
+			broadcastCurrTyping: ""
 		};
 
-		socket.on("message", (username, text) => {
-			console.log("message");
-			this.addMessage(username, text);
+		// socket.on("message", (username, text) => {
+		// 	console.log("message");
+		// 	this.addMessage(username, text);
+		// });
+		// socket.on("join", username => {
+		// 	console.log("Someone joined.");
+		// 	this.addMessage(username, "joined");
+		// });
+		// socket.on("leave", username => {
+		// 	console.log("Someone left.");
+		// 	this.addMessage(username, "left");
+		// });
+
+	}
+
+	componentDidMount() {
+		socket.on("chat", data => {
+
+			this.setState({
+				broadcastCurrTyping: "",
+				broadcast: [...this.state.broadcast, data]
+			});
 		});
-		socket.on("join", username => {
-			console.log("Someone joined.");
-			this.addMessage(username, "joined");
-		});
-		socket.on("leave", username => {
-			console.log("Someone left.");
-			this.addMessage(username, "left");
+
+		socket.on("typing", data => {
+			this.setState({
+				broadcastCurrTyping: data
+			});
 		});
 	}
 
@@ -30,30 +48,11 @@ class MainChat extends Component {
 		this.setState({
 			[e.target.name]: e.target.value
 		});
-    };
-    
-    componentDidMount(){
-        socket.on("chat", (data) => {
-            this.setState({
-                broadcast: [...this.state.broadcast, data]
-            })
-        })
-    }
+	};
 
-    // this.setState({
-    //     broadcast:{
-    //         ...this.state.broadcast,
-    //   "name": data.mainName, "message": data.message
-    //     }
-
-
-    // this.setState(() => ({
-    //     person: {
-    //       ...this.state.person,
-    //       firstName: "Tom",
-    //       secondName: "Jerry"
-    //     }
-    //   }));
+	handleCurrentTyping = e => {
+		socket.emit("typing", this.state.username);
+	};
 
 	displayInputFields = () => {
 		return (
@@ -69,6 +68,7 @@ class MainChat extends Component {
 					<input
 						type="text"
 						onChange={this.handleChange}
+						onKeyPress={this.handleCurrentTyping}
 						value={this.state.chatBoxText}
 						name="chatBoxText"
 						placeholder="enter message"
@@ -82,44 +82,45 @@ class MainChat extends Component {
 	sendMessage = e => {
 		e.preventDefault();
 		socket.emit("chat", {
-            broadcastName: this.state.username,
+			broadcastName: this.state.username,
 			message: this.state.chatBoxText
-			
 		});
 		this.setState({
 			chatBoxText: ""
 		});
 	};
 
+	displayMessageOnScreen = () => {
+		if (this.state.broadcast.length !== 0) {
+			return this.state.broadcast.map(el => {
+				return (
+					<div>
+						<span>{el.broadcastName}: </span>
+						<span>{el.message}</span>
+					</div>
+				);
+			});
+		}
+	};
 
-    displayMessageOnScreen = () => {
-        if(this.state.broadcast.length !== 0){
-            return this.state.broadcast.map(el => {
-                return(
-                    <div>
-                     <span>{el.broadcastName}: </span>  
-                     <span>{el.message}</span>   
-                    </div>
-                )
-             
-                
-            })
-        }
-}
-
+	displayCurrentTyper = () => {
+		if(this.state.broadcastCurrTyping !== ""){
+		return(
+			<div>
+	<span>{this.state.broadcastCurrTyping} is now typing...</span>
+			</div>
+		)
+		}
+	}
 
 	render() {
-
-		console.log(this.state.broadcast);
+		console.log(this.state.broadcastCurrTyping);
 		return (
 			<div>
 				Main chat component
 				{this.displayInputFields()}
-                {this.displayMessageOnScreen()}
-             
-               
-        
-
+				{this.displayMessageOnScreen()}
+				{this.displayCurrentTyper()}
 			</div>
 		);
 	}
