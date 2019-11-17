@@ -3,8 +3,15 @@ const app =  express()
 const bodyParser = require("body-parser")
 const socket = require("socket.io")
 
+
+//routes 
+const usersRouter = require("./routes/users.js")
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
+
+app.use("/api/users", usersRouter)
+
 
 const server = app.listen(3100, function(){
     console.log(3100)
