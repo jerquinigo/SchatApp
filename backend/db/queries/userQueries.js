@@ -18,9 +18,22 @@ getAllUsers = (req, res, next) => {
       });
   };
 
-  
+  createUser = (req,res,next) => {
+    db.one(
+        "INSERT INTO users(username, password, profile_pic) VALUES(${username},${password}, ${profile_pic}) RETURNING username",{
+        username: req.body.username,
+        password: req.body.password,
+        profile_pic: req.body.profile_pic || null
+        }
+    ).then(() => {
+        res.status(200).json({
+            status: "success",
+            message: "added a user"
+        })
+    })
+  }
 
 
 
 
-  module.exports={getAllUsers}
+  module.exports={getAllUsers, createUser}
