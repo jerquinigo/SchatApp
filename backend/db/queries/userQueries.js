@@ -1,5 +1,5 @@
 const {db} = require("../index.js")
-
+const authHelpers = require("../../auth/helpers");
 
 getAllUsers = (req, res, next) => {
     db.any(
@@ -19,10 +19,11 @@ getAllUsers = (req, res, next) => {
   };
 
   createUser = (req,res,next) => {
+    const hash = authHelpers.createHash(req.body.password);
     db.one(
         "INSERT INTO users(username, password, profile_pic) VALUES(${username},${password}, ${profile_pic}) RETURNING username",{
         username: req.body.username,
-        password: req.body.password,
+        password: hash,
         profile_pic: req.body.profile_pic || null
         }
     ).then(() => {
